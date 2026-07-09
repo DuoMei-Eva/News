@@ -172,8 +172,12 @@
             title = file.name.replace('.url', '');
             isExternal = true;
             try {
+                // 【修改點】不用預設的 file.download_url，改用 jsDelivr CDN 繞過 GitHub 429 限制
+                const fileNameEncoded = encodeURIComponent(file.name);
+                const cdnUrl = `https://cdn.jsdelivr.net/gh/${CONFIG.username}/${CONFIG.repo}@main/${CONFIG.folder ? CONFIG.folder + '/' : ''}${fileNameEncoded}`;
+                
                 // 抓取 .url 檔案內容
-                const res = await fetch(file.download_url);
+                const res = await fetch(cdnUrl);
                 const text = await res.text();
                 // 用正規表達式找 URL= 後面的網址
                 const match = text.match(/URL=(.+)/i);
@@ -183,7 +187,7 @@
                     return; // 格式不對跳過
                 }
             } catch (e) {
-                console.error("解析 .url 失敗:", file.name);
+                console.error("解析 .url 失敗:", file.name, e);
                 return;
             }
         }
